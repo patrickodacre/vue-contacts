@@ -68,7 +68,7 @@ export default {
     methods: {
         initSave() {
             if (this.config.editMode) {
-                this.$emit('updateCategory', this.category.id, this.category)
+                this.$emit('updateCategory', this.category)
             } else {
                 this.$emit('createCategory', this.category)
             }

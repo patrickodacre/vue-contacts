@@ -55,8 +55,8 @@
                     :is="activeComponent" 
                     :config="formConfig" 
                     :isDrawerActive="drawer"
-                    v-on:createCategory="createCategory"
-                    v-on:updateCategory="updateCategory"
+                    v-on:createCategory="handleCreateCategory"
+                    v-on:updateCategory="handleUpdateCategory"
 
                     v-on:createContact="handleCreateContact"
                     v-on:updateContact="handleUpdateContact"
@@ -71,6 +71,7 @@ import Drawer from '../components/Drawer.vue'
 import ContactForm from '../components/ContactForm.vue'
 import CategoryForm from '../components/CategoryForm.vue'
 import contacts from '../mixins/contacts'
+import categories from '../mixins/categories'
 
 import Bricks from 'bricks.js'
 
@@ -81,7 +82,7 @@ export default {
         ContactForm,
         CategoryForm,
     },
-    mixins: [contacts],
+    mixins: [contacts, categories],
     data() {
         return {
             loading: true,
@@ -103,11 +104,10 @@ export default {
         avatarStr,
 
         // categories:
-        getCategories,
+        handleCreateCategory,
+        handleUpdateCategory,
         initNewCategory,
         initEditCategory,
-        createCategory,
-        updateCategory,
         replaceCategory,
         getCategoryClass,
 
@@ -195,7 +195,7 @@ function getCategoryClass(id) {
 /* Contacts: */
 function handleCreateContact(contact) {
     this.createContact(contact)
-        .val(data => {
+        .val( data => {
             const categoryID = data.contact.category_id 
                                     ? data.contact.category_id
                                     : 1
@@ -207,12 +207,8 @@ function handleCreateContact(contact) {
 
 function handleUpdateContact(contact) {
     this.updateContact(contact)
-        .val(data => {
-            const category_id    = data.contact.category_id
-            const updatedContact = data.contact
-
-            this.replaceContact(category_id, updatedContact)
-
+        .val( data => {
+            this.replaceContact(data.contact)
             this.closeDrawer()
         })
 }
@@ -251,11 +247,12 @@ function initEditContact(contact) {
 /**
  * Replace old contact info with the newly updated contact info.
  * 
- * @param {number} category_id Only look in the relevant category.
  * @param {object} updatedContact the new contact information.
  * @return undefined
  */
-function replaceContact(category_id, updatedContact) {
+function replaceContact(updatedContact) {
+    const category_id = updatedContact.category_id
+
     this.contactsByCategory[category_id] = this.contactsByCategory[category_id].map(contact => {
                     if (contact.id === updatedContact.id) {
                         contact = updatedContact
@@ -265,23 +262,6 @@ function replaceContact(category_id, updatedContact) {
 }
 
 /* Categories: */
-
-function getCategories() {
-    return this.$http()
-                .route('api/v1/categories')
-                .get()
-                .then((done, resp) => {
-                    if (resp.status === 200) {
-                        done(resp.data)
-                    } else {
-                        done.fail('Could not retrieve contacts', resp)
-                    }
-                })
-                .or(err => {
-                    console.error(err)
-                })
-}
-
  
 /**
  * Init a new contact for a chosen category.
@@ -310,62 +290,26 @@ function initEditCategory(category) {
     this.openDrawer()
 }
 
-/**
- * Create a new contact category.
- *
- * @param {object} category Category details - name, description.
- * @return {object} Returns an instance of ASQ from the API service.
- */
-function createCategory(category) {
-    return this.$http()
-        .route('api/v1/categories')
-        .payload(category)
-        .post()
-        .then((done, resp) => {
-            if (resp.status === 201) {
-                this.categories.push(resp.data.category)
+function handleCreateCategory(category) {
+    this.createCategory(category)
+        .val( data => {
+            this.categories.push(resp.data.category)
 
-                // add new category to look up
-                this.contactsByCategory[resp.data.category.id] = [] 
+            // add new category to look up
+            this.contactsByCategory[resp.data.category.id] = [] 
 
-                this.closeDrawer()
-            } else {
-                done.fail('Could not create a new category.', resp)
-            }
-        })
-        .or(err => {
-            console.error(err)
+            this.closeDrawer()
         })
 }
 
-/**
- * Update an existing contact category.
- *
- * @param {object} category_id Category to edit.
- * @param {object} payload Updated category info.
- * @return {object} Returns an instance of ASQ from the API service.
- */
-function updateCategory(category_id, payload) {
-    return this.$http()
-        .route('api/v1/categories/' + category_id)
-        .payload(payload)
-        .patch()
-        .then((done, resp) => {
-            if (resp.status === 200) {
-
-                const category = resp.data.category
-
-                this.replaceCategory(category)
-                this.closeDrawer()
-                done()
-            } else {
-                done.fail('Could not update category.')
-            }
-        })
-        .or(err => {
-            console.error(err)
+function handleUpdateCategory(category) {
+    this.updateCategory(category)
+        .val( data => {
+            this.replaceCategory(data.category)
+            this.closeDrawer()
         })
 }
+
 
 /**
  * Replace old category info with the newly updated category info.
@@ -374,6 +318,7 @@ function updateCategory(category_id, payload) {
  * @return undefined
  */
 function replaceCategory(updatedCategory) {
+    debugger
     this.categories = this.categories.map(category => {
                     if (category.id === updatedCategory.id) {
                         category = updatedCategory
