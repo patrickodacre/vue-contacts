@@ -35,13 +35,6 @@ function createContact(contact) {
         .post()
         .then((done, resp) => {
             if (resp.status === 201) {
-
-                // const categoryID = resp.data.contact.category_id 
-                //                     ? resp.data.contact.category_id
-                //                     : 1
-
-                // this.contactsByCategory[categoryID].push(resp.data.contact)
-                // this.closeDrawer()
                 done(resp.data)
             } else {
                 done.fail('Could not create contact')
