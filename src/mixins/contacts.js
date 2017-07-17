@@ -59,9 +59,9 @@ function createContact(contact) {
  * @param {object} contact Updated contact details.
  * @return {object} Returns an instance of ASQ from the API service.
  */
-function updateContact(contact) {
+function updateContact(contact_id, contact) {
     return this.$http()
-        .route('api/v1/contacts/' + contact.id)
+        .route('api/v1/contacts/' + contact_id)
         .payload(contact)
         .patch()
         .then((done, resp) => {

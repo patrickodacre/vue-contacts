@@ -206,7 +206,7 @@ function handleCreateContact(contact) {
 }
 
 function handleUpdateContact(contact) {
-    this.updateContact(contact)
+    this.updateContact(contact.id, contact)
         .val( data => {
             this.replaceContact(data.contact)
             this.closeDrawer()
@@ -242,7 +242,6 @@ function initEditContact(contact) {
 
     this.openDrawer()
 }
-
 
 /**
  * Replace old contact info with the newly updated contact info.
@@ -310,7 +309,6 @@ function handleUpdateCategory(category) {
         })
 }
 
-
 /**
  * Replace old category info with the newly updated category info.
  * 
@@ -318,7 +316,6 @@ function handleUpdateCategory(category) {
  * @return undefined
  */
 function replaceCategory(updatedCategory) {
-    debugger
     this.categories = this.categories.map(category => {
                     if (category.id === updatedCategory.id) {
                         category = updatedCategory
