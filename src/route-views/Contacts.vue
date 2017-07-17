@@ -118,7 +118,6 @@ export default {
         handleUpdateContact,
         initNewContact,
         initEditContact,
-        replaceContact,
 
         // Sortable:
         onAdd, // event handler
@@ -172,7 +171,9 @@ function getCategoryClass(id) {
     return `contactList__${id}`
 }
 
-/* Contacts: */
+/* ==================================
+Contacts:
+==================================== */
 function handleCreateContact(contact) {
     this.createContact(contact)
         .val( data => {
@@ -188,7 +189,7 @@ function handleCreateContact(contact) {
 function handleUpdateContact(contact) {
     this.updateContact(contact.id, contact)
         .val( data => {
-            this.replaceContact(data.contact)
+            this.updateLists(data.contact, true)
             this.closeDrawer()
         })
 }
@@ -199,7 +200,7 @@ function handleUpdateContact(contact) {
  * @param {number} category_id Contact category.
  * @return {undefined}
  */
-function initNewContact(category_id = null) {
+function initNewContact(category_id = false) {
     this.activeComponent        = 'ContactForm'
     this.formConfig             = {}
     this.formConfig.category_id = category_id
@@ -223,19 +224,10 @@ function initEditContact(contact) {
     this.openDrawer()
 }
 
-/**
- * Replace old contact info with the newly updated contact info.
- * 
- * @param {object} updatedContact the new contact information.
- * @return {undefined}
- */
-function replaceContact(updatedContact) {
-    const category_id = updatedContact.category_id
 
-    this.updateLists(updatedContact)
-}
-
-/* Categories: */
+/* ==================================
+Categories
+==================================== */
  
 /**
  * Init a new contact for a chosen category.
@@ -299,7 +291,9 @@ function replaceCategory(updatedCategory) {
                 })
 }
 
-/* Sortable: */
+/* ==================================
+Sortable:
+==================================== */
 
 /**
  * Handle onAdd event from Sortable.js
@@ -324,16 +318,20 @@ function onAdd(evt) {
  * Update this.contacts and this.contactsByCategory
  * 
  * Using Sortable.js contact nodes can appear twice
- * in a list if we bother to keep our lists up to date.
+ * in a list if we update our lists manually.
+ * My efforts to keep track of each category and
+ * contact clash with Sortable.
  * 
- * The only way to prevent this seems to be to
- * reset the master list each time a contact
- * is updated in place or moved via Sortable.js
+ * Instead, I just keep this.contacts up to date when
+ * I've moved with Sortable, and I only reset the 
+ * contactsByCategory lookup object when I have altered 
+ * a contact's details.
  * 
  * @param {object} updatedContact Contact details.
+ * @param {boolean} redraw redraw contactsByCategory?
  * @return {undefined}
  */
-function updateLists(updatedContact) {
+function updateLists(updatedContact, redraw = false) {
     this.contacts = this.$collect(this.contacts)
                     .map(contact => {
                         if (contact.id === updatedContact.id) {
@@ -343,7 +341,14 @@ function updateLists(updatedContact) {
                     })
                     .get()
 
-    this.contactsByCategory = this.$collect(this.contacts).groupBy('category_id').get()
+    /* 
+    for whatever reason, the contacts don't reorder when we 
+    redraw after a contact has been updated, but only after
+    a Sortable drag / drop to another list.
+    */
+    if (redraw) {
+        this.contactsByCategory = this.$collect(this.contacts).groupBy('category_id').get()
+    }
 }
 
 /* The Drawer component slides in and out 
