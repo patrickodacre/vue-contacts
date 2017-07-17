@@ -57,8 +57,9 @@
                     :isDrawerActive="drawer"
                     v-on:createCategory="createCategory"
                     v-on:updateCategory="updateCategory"
-                    v-on:createContact="createContact"
-                    v-on:updateContact="updateContact"
+
+                    v-on:createContact="handleCreateContact"
+                    v-on:updateContact="handleUpdateContact"
                 >
                 </component>
             </Drawer>
@@ -111,15 +112,11 @@ export default {
         getCategoryClass,
 
         // contacts:
-        // getContacts,
+        handleCreateContact,
+        handleUpdateContact,
         initNewContact,
         initEditContact,
-        // createContact,
-        // updateContact,
         replaceContact,
-
-        // util
-        getRandomInt,
 
         // Sortable:
         onAdd,
@@ -150,6 +147,9 @@ function onAdd(evt) {
 }
 
 function avatarStr(id) {
+    if (id > 12) {
+        id = 12
+    }
     return `https://randomuser.me/api/portraits/men/${id}.jpg`
 }
 
@@ -188,38 +188,35 @@ function mounted() {
     // instance.resize(true)
 }
 
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-}
-
 function getCategoryClass(id) {
     return `contactList__${id}`
 }
 
-// /* Contacts:
-// - get
-// - init
-// - create
-// - update
-//  */
+/* Contacts: */
+function handleCreateContact(contact) {
+    this.createContact(contact)
+        .val(data => {
+            const categoryID = data.contact.category_id 
+                                    ? data.contact.category_id
+                                    : 1
 
-// function getContacts() {
-//     return this.$http()
-//                 .route('api/v1/contacts')
-//                 .get()
-//                 .then((done, resp) => {
-//                     if (resp.status === 200) {
-//                         done(resp.data)
-//                     } else {
-//                         done.fail('Could not retrieve contacts.', resp)
-//                     }
-//                 })
-//                 .or(err => {
-//                     console.error(err)
-//                 })
-// }
+            this.contactsByCategory[categoryID].push(data.contact)
+            this.closeDrawer()
+        })
+}
+
+function handleUpdateContact(contact) {
+    this.updateContact(contact)
+        .val(data => {
+            const category_id    = data.contact.category_id
+            const updatedContact = data.contact
+
+            this.replaceContact(category_id, updatedContact)
+
+            this.closeDrawer()
+        })
+}
+
 /**
  * Init a new contact for a chosen category.
  *
@@ -233,6 +230,7 @@ function initNewContact(category_id = null) {
 
     this.openDrawer()
 }
+
 /**
  * Init editing an existing contact.
  *
@@ -249,66 +247,6 @@ function initEditContact(contact) {
     this.openDrawer()
 }
 
-/**
- * Create a new contact.
- *
- * @param {object} contact Contact details from the ContactForm
- * @return {object} Returns an instance of ASQ from the API service.
- */
-function createContact(contact) {
-    return this.$http()
-        .route('api/v1/contacts')
-        .payload(contact)
-        .post()
-        .then((done, resp) => {
-            if (resp.status === 201) {
-
-                const categoryID = resp.data.contact.category_id 
-                                    ? resp.data.contact.category_id
-                                    : 1
-
-                this.contactsByCategory[categoryID].push(resp.data.contact)
-                this.closeDrawer()
-                done()
-            } else {
-                done.fail('Could not create contact')
-            }
-        })
-        .or(err => {
-            console.error(err)
-        })
-}
-
-/**
- * Update an existing contact.
- *
- * @param {number} contact_id Contact to edit.
- * @param {object} payload Updated contact details.
- * @return {object} Returns an instance of ASQ from the API service.
- */
-function updateContact(contact_id, payload) {
-
-    return this.$http()
-        .route('api/v1/contacts/' + contact_id)
-        .payload(payload)
-        .patch()
-        .then((done, resp) => {
-            if (resp.status === 200) {
-                const category_id    = resp.data.contact.category_id
-                const updatedContact = resp.data.contact
-
-                this.replaceContact(category_id, updatedContact)
-
-                this.closeDrawer()
-                done()
-            } else {
-                done.fail('Could not update contact.')
-            }
-        })
-        .or(err => {
-            console.error(err)
-        })
-}
 
 /**
  * Replace old contact info with the newly updated contact info.

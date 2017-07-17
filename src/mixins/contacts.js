@@ -22,7 +22,6 @@ function getContacts() {
                 })
 }
 
-
 /**
  * Create a new contact.
  *
@@ -57,24 +56,17 @@ function createContact(contact) {
  * Update an existing contact.
  *
  * @param {number} contact_id Contact to edit.
- * @param {object} payload Updated contact details.
+ * @param {object} contact Updated contact details.
  * @return {object} Returns an instance of ASQ from the API service.
  */
-function updateContact(contact_id, payload) {
-
+function updateContact(contact) {
     return this.$http()
-        .route('api/v1/contacts/' + contact_id)
-        .payload(payload)
+        .route('api/v1/contacts/' + contact.id)
+        .payload(contact)
         .patch()
         .then((done, resp) => {
             if (resp.status === 200) {
-                const category_id    = resp.data.contact.category_id
-                const updatedContact = resp.data.contact
-
-                this.replaceContact(category_id, updatedContact)
-
-                this.closeDrawer()
-                done()
+                done(resp.data)
             } else {
                 done.fail('Could not update contact.')
             }

@@ -91,7 +91,7 @@ export default {
     methods: {
         initSave() {
             if (this.config.editMode) {
-                this.$emit('updateContact', this.contact.id, this.contact)
+                this.$emit('updateContact', this.contact)
             } else {
                 this.$emit('createContact', this.contact)
             }
