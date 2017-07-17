@@ -30,6 +30,7 @@
                         <div :id="category.id" v-sortable="{ 
                                 onAdd, 
                                 group: 'contacts', 
+                                sort: false, // prevent re-ordering of contacts within a category.
                             }"
                             style="min-height: 50px;">
                             <div v-for="contact in contactsByCategory[category.id]" 
@@ -90,7 +91,7 @@ export default {
             activeComponent: '',
             formConfig: {},
             categories: [],
-            contacts: [],
+            contacts: [], // master list of contacts. Keep up to date.
             contactsByCategory: {},
         }
     },
@@ -99,6 +100,7 @@ export default {
     methods: {
         openDrawer,
         closeDrawer,
+        updateLists,
 
         // avatar
         avatarStr,
@@ -119,31 +121,8 @@ export default {
         replaceContact,
 
         // Sortable:
-        onAdd,
+        onAdd, // event handler
     }
-}
-
-function onAdd(evt) {
-
-    const contact_id = evt.item.id
-    const category_id = evt.target.id
-    const movedContact = this.contacts.find(contact => contact.id === evt.item.id)
-
-    // update our data if our update was successful.
-    this.updateContact(evt.item.id, {category_id})
-        .then((done, resp) => {
-            this.categories = this.categories.map(cat => {
-                if (cat.id === evt.from.id) {
-                    cat.contacts = cat.contacts.filter(contact => contact.id !== evt.item.id)
-                }
-
-                if (cat.id === evt.to.id) {
-                    cat.contacts.push(movedContact)
-                }
-
-                return cat
-            })
-        })
 }
 
 function avatarStr(id) {
@@ -165,9 +144,10 @@ function beforeMount() {
             contacts
         )
         .then((done, categories, contacts) => {
-            this.contactsByCategory = this.$collect(contacts).groupBy('category_id').get()
+            this.contacts           = contacts
             this.categories         = categories
-            this.loading = false
+            this.contactsByCategory = this.$collect(contacts).groupBy('category_id').get()
+            this.loading            = false
         })
 }
 
@@ -217,7 +197,7 @@ function handleUpdateContact(contact) {
  * Init a new contact for a chosen category.
  *
  * @param {number} category_id Contact category.
- * @return undefined
+ * @return {undefined}
  */
 function initNewContact(category_id = null) {
     this.activeComponent        = 'ContactForm'
@@ -231,7 +211,7 @@ function initNewContact(category_id = null) {
  * Init editing an existing contact.
  *
  * @param {object} contact Contact details.
- * @return undefined
+ * @return {undefined}
  */
 function initEditContact(contact) {
     this.activeComponent = 'ContactForm'
@@ -247,17 +227,12 @@ function initEditContact(contact) {
  * Replace old contact info with the newly updated contact info.
  * 
  * @param {object} updatedContact the new contact information.
- * @return undefined
+ * @return {undefined}
  */
 function replaceContact(updatedContact) {
     const category_id = updatedContact.category_id
 
-    this.contactsByCategory[category_id] = this.contactsByCategory[category_id].map(contact => {
-                    if (contact.id === updatedContact.id) {
-                        contact = updatedContact
-                    }
-                    return contact
-                })
+    this.updateLists(updatedContact)
 }
 
 /* Categories: */
@@ -265,7 +240,7 @@ function replaceContact(updatedContact) {
 /**
  * Init a new contact for a chosen category.
  *
- * @return undefined
+ * @return {undefined}
  */
 function initNewCategory() {
     this.activeComponent = 'CategoryForm'
@@ -277,7 +252,7 @@ function initNewCategory() {
  * Init edit existing category
  *
  * @param {object} category The category
- * @return undefined
+ * @return {undefined}
  */
 function initEditCategory(category) {
     this.activeComponent = 'CategoryForm'
@@ -313,7 +288,7 @@ function handleUpdateCategory(category) {
  * Replace old category info with the newly updated category info.
  * 
  * @param {object} updatedCategory the new category information.
- * @return undefined
+ * @return {undefined}
  */
 function replaceCategory(updatedCategory) {
     this.categories = this.categories.map(category => {
@@ -322,6 +297,53 @@ function replaceCategory(updatedCategory) {
                     }
                     return category
                 })
+}
+
+/* Sortable: */
+
+/**
+ * Handle onAdd event from Sortable.js
+ * 
+ * Remove contact from old category list and add
+ * to new category list.
+ * 
+ * @return {undefined}
+ */
+function onAdd(evt) {
+    const moved_contact_id = evt.item.id
+    const new_category_id  = evt.target.id
+    const prev_category_id = evt.from.id
+
+    this.updateContact(moved_contact_id, {category_id: new_category_id})
+        .val( data => {
+            this.updateLists(data.contact)
+        })
+}
+
+/**
+ * Update this.contacts and this.contactsByCategory
+ * 
+ * Using Sortable.js contact nodes can appear twice
+ * in a list if we bother to keep our lists up to date.
+ * 
+ * The only way to prevent this seems to be to
+ * reset the master list each time a contact
+ * is updated in place or moved via Sortable.js
+ * 
+ * @param {object} updatedContact Contact details.
+ * @return {undefined}
+ */
+function updateLists(updatedContact) {
+    this.contacts = this.$collect(this.contacts)
+                    .map(contact => {
+                        if (contact.id === updatedContact.id) {
+                            contact = updatedContact
+                        }
+                        return contact
+                    })
+                    .get()
+
+    this.contactsByCategory = this.$collect(this.contacts).groupBy('category_id').get()
 }
 
 /* The Drawer component slides in and out 
