@@ -1,0 +1,6 @@
+const allMutations = {
+}
+
+export {
+    allMutations
+}
