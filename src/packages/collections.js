@@ -244,9 +244,7 @@ function createCollection(subjectArray) {
         collection = props.reduce((finalObj, prop) => {
 
             if (isObj(collection[prop])) {
-
-                tbscLog($log.error("Obj is too deep. Cannot group by on this collection.", collection))
-
+                console.error('Obj is too deep. Cannot groupBy on this collection', collection)
                 return
             }
 
