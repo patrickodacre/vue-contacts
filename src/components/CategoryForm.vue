@@ -8,6 +8,7 @@
         <div class="categoryWebForm__fields">
             <v-text-field
                 name="category_name"
+                required
                 label="Category Name"
                 id="category_name"
                 v-model="category.name"
@@ -24,7 +25,7 @@
                 <div class="errors" v-show="showError">
                     {{errorMessage}}
                 </div>
-                <v-btn :disabled="showError" light @click.native="initSave">Save</v-btn>
+                <v-btn :disabled="showError || !category.name" light @click.native="initSave">Save</v-btn>
             </div>
         </div>
         <v-divider></v-divider>
@@ -124,6 +125,7 @@ export default {
     },
     methods: {
         initSave() {
+
             if (this.config.editMode) {
                 this.$emit('updateCategory', this.category)
             } else {
