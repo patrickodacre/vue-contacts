@@ -99,6 +99,7 @@ export default {
         isDrawerActive: function (active) {
             if (!active) return
 
+            // We have to initialize these data here, too, since mounted() only fires once.
             this.categoryNames    = this.config.categoryNames 
                                         ? this.config.categoryNames
                                         : []

@@ -122,6 +122,7 @@ export default {
     },
     mounted() {
 
+        // initialize our data here.
         if (this.config.editMode && this.config.contact) {
             this.contact = this.config.contact
         } else {
@@ -133,6 +134,7 @@ export default {
         isDrawerActive: function (active) {
             if (!active) return
 
+            // initialize again here mounted() only fires once.
             if (this.config.editMode && this.config.contact) {
                 this.contact = this.config.contact
             } else {
