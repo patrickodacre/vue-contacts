@@ -212,7 +212,20 @@ function beforeMount() {
         .then((done, categories, contacts) => {
             this.contacts           = contacts
             this.categories         = categories
-            this.contactsByCategory = this.$collect(contacts).groupBy('category_id').get()
+
+            // make sure we have ALL categories in our lookup
+            const contactsByCategoryStarter = categories
+                                                .reduce((carry, cat) => {
+                                                    carry[cat.id] = []
+                                                    return carry
+                                                }, {})
+
+            this.contactsByCategory = contacts
+                                        .reduce((carry, contact) => {
+                                            carry[contact.category_id].push(contact)
+                                            return carry
+                                        }, contactsByCategoryStarter)
+
             this.loading            = false
         })
 }
@@ -252,6 +265,7 @@ function handleCreateContact(contact) {
                                     ? data.contact.category_id
                                     : 1
 
+            this.contacts.push(data.contact)
             this.contactsByCategory[categoryID].push(data.contact)
             this.closeDrawer()
         })
@@ -344,7 +358,8 @@ function initEditContact(contact) {
 function updateContactLists(updatedContact, redraw = false) {
     this.contacts = this.contacts
                         .map(contact => {
-                            if (contact.id === updatedContact.id) {
+                            // loose comparison necessary
+                            if (contact.id == updatedContact.id) {
                                 contact = updatedContact
                             }
                             return contact
