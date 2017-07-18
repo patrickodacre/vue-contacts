@@ -74,7 +74,7 @@ export default {
                                     ? this.config.category
                                     : this.initForm()
 
-        this.categoryNameCopy = this.config.category.name
+        this.categoryNameCopy = this.config.editMode ? this.config.category.name : false
     },
     props: {
 
@@ -107,7 +107,7 @@ export default {
                                         ? this.config.category
                                         : this.initForm()
 
-            this.categoryNameCopy = this.config.category.name
+            this.categoryNameCopy = this.config.editMode ? this.config.category.name : false
                                     
         },
         'category.name': function (name) {
