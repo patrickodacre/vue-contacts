@@ -38,7 +38,7 @@
                     <v-toolbar class="green" dark>
                         <v-toolbar-title>{{category.name}}</v-toolbar-title>
                         <v-spacer></v-spacer>
-                        <v-btn icon @click.native="initEditCategory(category)">
+                        <v-btn icon @click.native="initEditCategory(category)" v-if="category.id !== 1">
                             <v-icon>edit</v-icon>
                         </v-btn>
                         <v-btn icon @click.native="initNewContact(category.id)">
