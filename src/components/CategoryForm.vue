@@ -18,11 +18,26 @@
 
             <v-btn light @click.native="initSave">Save</v-btn>
         </header>
+
+        <DangerZone
+            v-if="category.id !== 1 && config.editMode"
+            :compareStr="category.name"
+            v-on:deleteConfirmed="initDeleteCategory"
+            inputLabel="Category Name"
+        >
+            <p slot="text">
+                Simply type the name of the category and click the Delete button to confirm.
+            </p>
+        </DangerZone>
     </section>
 </template>
 <script>
+import DangerZone from './DangerZone.vue'
 export default {
     name: 'CategoryWebForm',
+    components: {
+        DangerZone
+    },
     data() {
         return {
             category: this.initForm()
@@ -82,7 +97,11 @@ export default {
         resetForm() {
             this.category = this.initForm()
         },
-     
+        initDeleteCategory() {
+            if (this.category.id === 1) return
+
+            this.$emit('deleteCategory', this.category)
+        }
     }
 }
 </script>

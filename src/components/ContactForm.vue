@@ -76,9 +76,15 @@
         <v-divider></v-divider>
 
         <DangerZone
+            v-if="config.editMode"
             :compareStr="contact.first_name"
             v-on:deleteConfirmed="initDeleteContact"
-        ></DangerZone>
+            inputLabel="First Name of the Contact"
+        >
+            <p slot="text">
+                Simply type the first name of the contact and click the Delete button to confirm.
+            </p>
+        </DangerZone>
 
     </section>
 </template>
@@ -197,25 +203,6 @@ export default {
                 &:hover {
                     cursor: pointer;
                 }
-            }
-        }
-    }
-
-    /* Confirm delete of contact */
-    .dangerZone {
-        &__confirm {
-            display: flex;
-            flex-flow: row wrap;
-            justify-content: space-between;
-            align-items: flex-start;
-
-            .input {
-                flex: 1 0 200px;
-            }
-
-            .button button:disabled:not(.btn--icon):not(.btn--flat) {
-                background-color: rgba(255,0,0,0.25) !important;
-                color: white;
             }
         }
     }
