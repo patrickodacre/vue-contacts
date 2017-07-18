@@ -1,4 +1,4 @@
-# freelancer-toolkit
+# vue-contacts
 
 > A Vue.js project
 
