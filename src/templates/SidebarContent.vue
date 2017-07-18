@@ -40,7 +40,7 @@
     
         </main>
         
-        <v-footer class="indigo">
+        <v-footer class="green">
             <span>&copy; 2017</span>
         </v-footer>
     </v-app>
