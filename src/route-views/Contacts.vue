@@ -50,12 +50,20 @@
                         </v-btn>
                     </v-toolbar>
                     <v-list two-line>
-                        <div :id="category.id" v-sortable="{ 
+                        <div ref="sortable" 
+                            :id="category.id"
+                            :class="{
+                                'hasContacts': hasContacts[category.id],
+                                'noContacts' : !hasContacts[category.id]
+                                }"
+                            v-sortable:foo="{ 
                                 onAdd, 
                                 group: 'contacts', 
                                 sort: false, // prevent re-ordering of contacts within a category.
-                            }"
-                            style="min-height: 50px;">
+                            }">
+                            <div class="noContactsPlaceholder" v-show="!hasContacts[category.id]" @click="initNewContact(category.id)">
+                                <div>Add a Contact</div>
+                            </div>
                             <div v-for="contact in contactsByCategory[category.id]" 
                                 :key="contact.id" 
                                 :id="contact.id" 
@@ -126,6 +134,22 @@ export default {
                         ? this.categories.filter(cat => this.selectedCategories.indexOf(cat.id) !== -1)
                         : this.categories
         },
+        /**
+         * Use this check to dynamically add css class
+         * to the contact list wrappers.
+         * 
+         * IMPORTANT: id's come from server as strings or numbers,
+         * so need loose comparison ==
+         * 
+         * @return {object} Returns object of category ids with boolean values
+         */
+        hasContacts() {
+            return this.categories.reduce((carry, cat) => {
+                carry[cat.id] = this.contacts.filter(contact => contact.category_id == cat.id).length > 0
+
+                return carry
+            }, {})
+        }
     },
     watch: {
         /**
@@ -393,16 +417,27 @@ function updateContactLists(updatedContact, redraw = false) {
                             if (contact.id === updatedContact.id) {
                                 contact = updatedContact
                             }
-                            return contact
-                        })
+<style lang="scss">
 
-    /* 
-    for whatever reason, the contacts don't reorder when we 
-    redraw after a contact has been updated, but only after
-    a Sortable drag / drop to another list.
-    */
-    if (redraw) {
-        this.setContactsByCategory(this.contacts)
+    .noContacts {
+        min-height: 50px;
+        border: 1px dashed lightgreen;
+        margin: 1rem;
+        display: flex;
+        flex-direction: column;
+
+        > .noContactsPlaceholder {
+            flex: 1 0 auto;
+            width: 100%;
+
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+                cursor: pointer;
+            }
     }
 }
 
