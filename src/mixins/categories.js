@@ -7,6 +7,9 @@ export default {
     }
 }
 
+/**
+ * @return {object} Returns an instance of ASQ from the API service.
+ */
 function getCategories() {
     return this.$http()
                 .route('api/v1/categories')

@@ -7,6 +7,9 @@ export default {
     }
 }
 
+/**
+ * @return {object} Returns an instance of ASQ from the API service.
+ */
 function getContacts() {
     return this.$http()
                 .route('api/v1/contacts')
