@@ -3,6 +3,7 @@ export default {
         getCategories,
         createCategory,
         updateCategory,
+        deleteCategory,
     }
 }
 
@@ -61,6 +62,28 @@ function updateCategory(category) {
                 done(resp.data)
             } else {
                 done.fail('Could not update category.')
+            }
+        })
+        .or(err => {
+            console.error(err)
+        })
+}
+
+/**
+ * Delete a category.
+ *
+ * @param {number} category_id Category to delete.
+ * @return {object} Returns an instance of ASQ from the API service.
+ */
+function deleteCategory(category_id) {
+    return this.$http()
+        .route('api/v1/categories/' + category_id)
+        .delete()
+        .then((done, resp) => {
+            if (resp.status === 200) {
+                done(resp.data)
+            } else {
+                done.fail('Could not delete category.')
             }
         })
         .or(err => {

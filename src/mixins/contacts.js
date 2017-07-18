@@ -73,7 +73,7 @@ function updateContact(contact_id, contact) {
 /**
  * Delete a contact.
  *
- * @param {number} contact_id Contact to edit.
+ * @param {number} contact_id Contact to delete.
  * @return {object} Returns an instance of ASQ from the API service.
  */
 function deleteContact(contact_id) {
