@@ -1,10 +1,8 @@
 <template>
     <section class="contactWebForm">
         <header class="drawerHeader contactWebForm__header">
-            <h2>Create New Contact</h2>
-            <div class="actions">
-                
-            </div>
+            <h2 v-if="!config.editMode">Create New Contact</h2>
+            <h2 v-if="config.editMode">Edit Contact - {{contactNameCopy}}</h2>
         </header>
         <v-divider></v-divider>
         <div class="contactWebForm__fields">
@@ -99,6 +97,7 @@ export default {
     data() {
         return {
             contact: this.initForm(),
+            contactNameCopy: '', // save this unmutatable reference
         }
     },
     props: {
@@ -125,6 +124,7 @@ export default {
         // initialize our data here.
         if (this.config.editMode && this.config.contact) {
             this.contact = this.config.contact
+            this.contactNameCopy = this.config.contact.first_name + ' ' + this.config.contact.last_name
         } else {
             this.resetForm()
             this.setCategoryID()
@@ -137,6 +137,7 @@ export default {
             // initialize again here mounted() only fires once.
             if (this.config.editMode && this.config.contact) {
                 this.contact = this.config.contact
+                this.contactNameCopy = this.config.contact.first_name + ' ' + this.config.contact.last_name
             } else {
                 this.resetForm()
                 this.setCategoryID()
