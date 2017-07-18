@@ -71,6 +71,7 @@ const httpService = () => {
             get: (config = defaultConfig) => ASQ(done => axios.get(apiURI, config).then(done)),
             post: (config = defaultConfig) => ASQ(done => axios.post(apiURI, payLoad, config).then(done)),
             patch: (config = defaultConfig) => ASQ(done => axios.patch(apiURI, payLoad, config).then(done)),
+            delete: (config = defaultConfig) => ASQ(done => axios.delete(apiURI, config).then(done)),
         }
 
         const core = {

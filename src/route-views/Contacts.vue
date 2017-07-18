@@ -61,6 +61,7 @@
 
                     v-on:createContact="handleCreateContact"
                     v-on:updateContact="handleUpdateContact"
+                    v-on:deleteContact="handleDeleteContact"
                 >
                 </component>
             </Drawer>
@@ -100,7 +101,6 @@ export default {
     methods: {
         openDrawer,
         closeDrawer,
-        updateLists,
 
         // avatar
         avatarStr,
@@ -116,8 +116,14 @@ export default {
         // contacts:
         handleCreateContact,
         handleUpdateContact,
+        handleDeleteContact,
         initNewContact,
         initEditContact,
+
+        // contact lists:
+        updateContactLists,
+        removeContactFromList,
+        setContactsByCategory,
 
         // Sortable:
         onAdd, // event handler
@@ -189,7 +195,15 @@ function handleCreateContact(contact) {
 function handleUpdateContact(contact) {
     this.updateContact(contact.id, contact)
         .val( data => {
-            this.updateLists(data.contact, true)
+            this.updateContactLists(data.contact, true)
+            this.closeDrawer()
+        })
+}
+
+function handleDeleteContact(contact) {
+    this.deleteContact(contact.id)
+        .val( data => {
+            this.removeContactFromList(data.contact.id)
             this.closeDrawer()
         })
 }
@@ -310,7 +324,7 @@ function onAdd(evt) {
 
     this.updateContact(moved_contact_id, {category_id: new_category_id})
         .val( data => {
-            this.updateLists(data.contact)
+            this.updateContactLists(data.contact)
         })
 }
 
@@ -331,15 +345,14 @@ function onAdd(evt) {
  * @param {boolean} redraw redraw contactsByCategory?
  * @return {undefined}
  */
-function updateLists(updatedContact, redraw = false) {
-    this.contacts = this.$collect(this.contacts)
-                    .map(contact => {
-                        if (contact.id === updatedContact.id) {
-                            contact = updatedContact
-                        }
-                        return contact
-                    })
-                    .get()
+function updateContactLists(updatedContact, redraw = false) {
+    this.contacts = this.contacts
+                        .map(contact => {
+                            if (contact.id === updatedContact.id) {
+                                contact = updatedContact
+                            }
+                            return contact
+                        })
 
     /* 
     for whatever reason, the contacts don't reorder when we 
@@ -347,8 +360,34 @@ function updateLists(updatedContact, redraw = false) {
     a Sortable drag / drop to another list.
     */
     if (redraw) {
-        this.contactsByCategory = this.$collect(this.contacts).groupBy('category_id').get()
+        this.setContactsByCategory(this.contacts)
     }
+}
+
+/**
+ * Remove a contact from the UI after deletion.
+ * 
+ * Must set the contactsByCategory lookup obj
+ * as well to redraw the UI
+ * 
+ * @param {number} deletedContactID
+ * @return {undefined}
+ */
+function removeContactFromList(deletedContactID) {
+    this.contacts = this.contacts
+                        .filter(contact => contact.id !== deletedContactID)
+
+    this.setContactsByCategory(this.contacts)
+}
+
+/**
+ * Recalc the contactsByCategory lookup obj
+ * to refresh the UI
+ * 
+ * @return {undefined}
+ */
+function setContactsByCategory(contacts) {
+    this.contactsByCategory = this.$collect(contacts).groupBy('category_id').get()
 }
 
 /* The Drawer component slides in and out 
@@ -379,14 +418,11 @@ function closeDrawer() {
     button.has-text {
         span {
             display: inline-block;
-            margin-left: 0.5rem;
+            margin: 0 0.5rem;
         }
-    }
 
-    .drawerHeader {
-        h2 {
-            font-size: 2rem;
-            margin-top: 0;
+        &.has-color i {
+            color: white;
         }
     }
 

@@ -3,6 +3,7 @@ export default {
         getContacts,
         createContact,
         updateContact,
+        deleteContact,
     }
 }
 
@@ -62,6 +63,28 @@ function updateContact(contact_id, contact) {
                 done(resp.data)
             } else {
                 done.fail('Could not update contact.')
+            }
+        })
+        .or(err => {
+            console.error(err)
+        })
+}
+
+/**
+ * Delete a contact.
+ *
+ * @param {number} contact_id Contact to edit.
+ * @return {object} Returns an instance of ASQ from the API service.
+ */
+function deleteContact(contact_id) {
+    return this.$http()
+        .route('api/v1/contacts/' + contact_id)
+        .delete()
+        .then((done, resp) => {
+            if (resp.status === 200) {
+                done(resp.data)
+            } else {
+                done.fail('Could not delete contact.')
             }
         })
         .or(err => {

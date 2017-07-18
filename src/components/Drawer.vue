@@ -217,7 +217,7 @@
 
     .tkDrawer.mainDrawer {
         background: $grey_background;
-        min-width: 320px;
+        min-width: 200px;
         width: 80%;
         height: 100%;
         right: 0;
@@ -283,6 +283,23 @@
         top: 0;
         /* make sure background extends over ALL content */
         height: 100%; 
+    }
+
+    .drawerHeader {
+        h2 {
+            font-size: 2rem;
+            margin-top: 0;
+        }
+    }
+
+    h3 {
+        font-size: 1.5rem;
+    }
+
+    /* Vuetify style helpers: */
+
+    .menu__content {
+        z-index: 99;
     }
 
 </style>
