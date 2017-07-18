@@ -1,7 +1,11 @@
 <template>
-    <section class="contactWebForm">
-        <header class="drawerHeader">
-            <h2>Create New Category</h2>
+    <section class="categoryWebForm">
+        <header class="drawerHeader categoryWebForm__header">
+            <h2 v-if="!config.editMode">Create New Category</h2>
+            <h2 v-if="config.editMode">Edit Category</h2>
+        </header>
+        <v-divider></v-divider>
+        <div class="categoryWebForm__fields">
             <v-text-field
                 name="category_name"
                 label="Category Name"
@@ -16,8 +20,14 @@
                 v-model="category.description"
             ></v-text-field>
 
-            <v-btn light @click.native="initSave">Save</v-btn>
-        </header>
+            <div class="actions">
+                <div class="errors" v-show="showError">
+                    {{errorMessage}}
+                </div>
+                <v-btn :disabled="showError" light @click.native="initSave">Save</v-btn>
+            </div>
+        </div>
+        <v-divider></v-divider>
 
         <DangerZone
             v-if="category.id !== 1 && config.editMode"
@@ -40,15 +50,23 @@ export default {
     },
     data() {
         return {
-            category: this.initForm()
+            category: this.initForm(),
+            showError: false,
+            errorMessage: '',
+            categoryNames: [],
         }
     },
+    /**
+     * Initialize some data.
+     */
     mounted() {
-        if (this.config.editMode && this.config.category) {
-            this.category = this.config.category
-        } else {
-            this.resetForm()
-        }
+        this.categoryNames = this.config.categoryNames 
+                                ? this.config.categoryNames
+                                : []
+
+        this.category      = (this.config.editMode && this.config.category)
+                                ? this.config.category
+                                : this.initForm()
     },
     props: {
 
@@ -73,11 +91,25 @@ export default {
         isDrawerActive: function (active) {
             if (!active) return
 
-            if (this.config.editMode && this.config.category) {
-                this.category = this.config.category
+            this.categoryNames = this.config.categoryNames 
+                                    ? this.config.categoryNames
+                                    : []
+
+            this.category      = (this.config.editMode && this.config.category)
+                                    ? this.config.category
+                                    : this.initForm()
+        },
+        'category.name': function (name) {
+            if (this.categoryNames.indexOf(name) !== -1) {
+                this.showErrorMessage('You already have a category with this name.')
             } else {
-                this.resetForm()
+                this.showError = false
             }
+        }
+    },
+    computed: {
+        canSave() {
+            return this.categoryNames.indexOf(this.category.name) !== -1
         }
     },
     methods: {
@@ -94,15 +126,62 @@ export default {
                 description: ''
             }
         },
-        resetForm() {
-            this.category = this.initForm()
-        },
         initDeleteCategory() {
             if (this.category.id === 1) return
 
             this.$emit('deleteCategory', this.category)
+        },
+        showErrorMessage(msg) {
+            this.showError    = true
+            this.errorMessage = msg
         }
     }
 }
 </script>
+<style lang="scss">
+
+.errors {
+    margin-right: auto;
+    border: 1px solid red;
+    padding: 1rem;
+    color: rgba(255, 0, 0, 0.9);
+    background: rgba(255, 0, 0, 0.05)
+}
+    
+.categoryWebForm {
+
+    &__header {
+        display: flex;
+        justify-content: space-between;
+
+        .actions {
+            > * {
+                display: flex;
+                
+                height: 44px;
+                width: 44px;
+
+                > * {
+                    margin: auto;
+                }
+            }
+
+            .delete {
+                &:hover {
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+
+    &__fields {
+        padding: 2rem 0;
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+    }
+}
+</style>
 

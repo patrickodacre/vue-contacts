@@ -399,7 +399,10 @@ Categories
  */
 function initNewCategory() {
     this.activeComponent = 'CategoryForm'
-    this.formConfig      = {}
+    this.formConfig      = {
+        // we need the names for some simple validation
+        categoryNames: this.categories.map(cat => cat.name) 
+    }
 
     this.openDrawer()
 }
@@ -412,6 +415,9 @@ function initNewCategory() {
 function initEditCategory(category) {
     this.activeComponent = 'CategoryForm'
     this.formConfig      = {
+        // we need the names for some simple validation. 
+        // We don't want to check against the category being edited, though.
+        categoryNames: this.categories.filter(cat => cat.id !== category.id).map(cat => cat.name),
         category: this.$collect(category).clone().get(), // avoid mutating by reference
         editMode: true
     }
