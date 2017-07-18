@@ -1,10 +1,6 @@
 <template>
-    <div class="fullWrap">
+    <div class="contactsPage fullWrap">
         <div class="fullWrap__inner">
-            <v-btn primary class="tkBtn has-text" @click.native="initNewCategory">
-                <v-icon>add</v-icon>
-                <span>New Category</span>
-            </v-btn>
 
             <v-progress-circular 
                 v-show="loading"
@@ -89,6 +85,7 @@
                     :isDrawerActive="drawer"
                     v-on:createCategory="handleCreateCategory"
                     v-on:updateCategory="handleUpdateCategory"
+                    v-on:deleteCategory="handleDeleteCategory"
 
                     v-on:createContact="handleCreateContact"
                     v-on:updateContact="handleUpdateContact"
@@ -103,8 +100,8 @@
 import Drawer from '../components/Drawer.vue'
 import ContactForm from '../components/ContactForm.vue'
 import CategoryForm from '../components/CategoryForm.vue'
-import contacts from '../mixins/contacts'
-import categories from '../mixins/categories'
+import contactsMixin from '../mixins/contacts'
+import categoriesMixin from '../mixins/categories'
 
 import Bricks from 'bricks.js'
 
@@ -115,7 +112,7 @@ export default {
         ContactForm,
         CategoryForm,
     },
-    mixins: [contacts, categories],
+    mixins: [contactsMixin, categoriesMixin],
     data() {
         return {
             loading: true,
@@ -174,11 +171,11 @@ export default {
         // categories:
         handleCreateCategory,
         handleUpdateCategory,
+        handleDeleteCategory,
         initNewCategory,
         initEditCategory,
         replaceCategory,
-        getCategoryClass,
-
+        
         // contacts:
         handleCreateContact,
         handleUpdateContact,
@@ -196,15 +193,13 @@ export default {
     }
 }
 
-function avatarStr(id) {
-    if (id > 12) {
-        id = 12
-    }
-    return `https://randomuser.me/api/portraits/men/${id}.jpg`
-}
-
+/**
+ * Get all contacts and categories
+ * and init important data.
+ * 
+ * @return {undefined}
+ */
 function beforeMount() {
-
     const categories = this.getCategories()
     const contacts   = this.getContacts()
 
@@ -239,13 +234,17 @@ function mounted() {
     // instance.resize(true)
 }
 
-function getCategoryClass(id) {
-    return `contactList__${id}`
-}
-
 /* ==================================
 Contacts:
 ==================================== */
+/**
+ * After we create a contact we want
+ * to add it to the proper category.
+ * 
+ * @listens event:createContact
+ * @param {object} contact The contact details.
+ * @return {undefined}
+ */
 function handleCreateContact(contact) {
     this.createContact(contact)
         .val( data => {
@@ -258,6 +257,15 @@ function handleCreateContact(contact) {
         })
 }
 
+/**
+ * After updating a contact we update
+ * our contact list and refresh our
+ * contactsByCategory lookup.
+ * 
+ * @listens event:updateContact
+ * @param {object} contact Updated contact details.
+ * @return {undefined}
+ */
 function handleUpdateContact(contact) {
     this.updateContact(contact.id, contact)
         .val( data => {
@@ -266,6 +274,15 @@ function handleUpdateContact(contact) {
         })
 }
 
+/**
+ * After deleting a contact we update
+ * our contact list and refresh our
+ * contactsByCategory lookup.
+ * 
+ * @listens event:updateContact
+ * @param {object} contact Updated contact details.
+ * @return {undefined}
+ */
 function handleDeleteContact(contact) {
     this.deleteContact(contact.id)
         .val( data => {
@@ -290,6 +307,9 @@ function initNewContact(category_id = false) {
 
 /**
  * Init editing an existing contact.
+ * 
+ * We clone the contact object to avoid
+ * mutating the visible contact by reference.
  *
  * @param {object} contact Contact details.
  * @return {undefined}
@@ -302,6 +322,69 @@ function initEditContact(contact) {
     }
 
     this.openDrawer()
+}
+
+/**
+ * Update this.contacts and this.contactsByCategory
+ * 
+ * Using Sortable.js contact nodes can appear twice
+ * in a list if we update our lists manually.
+ * My efforts to keep track of each category and
+ * contact clash with Sortable.
+ * 
+ * Instead, I just keep this.contacts up to date when
+ * I've moved with Sortable, and I only reset the 
+ * contactsByCategory lookup object when I have altered 
+ * a contact's details.
+ * 
+ * @param {object} updatedContact Contact details.
+ * @param {boolean} redraw redraw contactsByCategory?
+ * @return {undefined}
+ */
+function updateContactLists(updatedContact, redraw = false) {
+    this.contacts = this.contacts
+                        .map(contact => {
+                            if (contact.id === updatedContact.id) {
+                                contact = updatedContact
+                            }
+                            return contact
+                        })
+
+    /* Sortable hack:
+    for whatever reason, the contacts don't reorder when we 
+    redraw after a contact has been updated, but only after
+    a Sortable drag / drop to another list.
+    */
+    if (redraw) {
+        this.setContactsByCategory(this.contacts)
+    }
+}
+
+/**
+ * Remove a contact from the UI after deletion.
+ * 
+ * Must set the contactsByCategory lookup obj
+ * as well to redraw the UI
+ * 
+ * @param {number} deletedContactID
+ * @return {undefined}
+ */
+function removeContactFromList(deletedContactID) {
+    this.contacts = this.contacts
+                        .filter(contact => contact.id !== deletedContactID)
+
+    this.setContactsByCategory(this.contacts)
+}
+
+/**
+ * Recalc the contactsByCategory lookup obj
+ * to refresh the UI
+ * 
+ * @param {array} contacts Array of contacts.
+ * @return {undefined}
+ */
+function setContactsByCategory(contacts) {
+    this.contactsByCategory = this.$collect(contacts).groupBy('category_id').get()
 }
 
 
@@ -323,7 +406,7 @@ function initNewCategory() {
 /**
  * Init edit existing category
  *
- * @param {object} category The category
+ * @param {object} category The category to edit.
  * @return {undefined}
  */
 function initEditCategory(category) {
@@ -336,22 +419,79 @@ function initEditCategory(category) {
     this.openDrawer()
 }
 
+/**
+ * After we create a category we want
+ * to add it to the list and to the
+ * contactsByCategory lookup.
+ * 
+ * @listens event:createCategory
+ * @param {object} category The category details.
+ * @return {undefined}
+ */
 function handleCreateCategory(category) {
     this.createCategory(category)
         .val( data => {
-            this.categories.push(resp.data.category)
+            this.categories.push(data.category)
 
             // add new category to look up
-            this.contactsByCategory[resp.data.category.id] = [] 
+            this.contactsByCategory[data.category.id] = [] 
 
             this.closeDrawer()
         })
 }
 
+/**
+ * After updating a category we update
+ * the category in the category list.
+ * 
+ * @listens event:updateCategory
+ * @param {object} category Updated category details.
+ * @return {undefined}
+ */
 function handleUpdateCategory(category) {
     this.updateCategory(category)
         .val( data => {
             this.replaceCategory(data.category)
+            this.closeDrawer()
+        })
+}
+
+/**
+ * Delete Category
+ * Refetch updated contacts
+ * 
+ * @param {object} category The category to delete.
+ * @return {undefined}
+ */
+function handleDeleteCategory(category) {
+
+    this.deleteCategory(category.id)
+        .then( (done, data) => {
+            /* have to get our contacts again since
+            they were updated when the category was deleted
+            */
+            this.getContacts()
+                .then((done, contacts) => {
+                    this.contacts = contacts
+                    this.setContactsByCategory(this.contacts)
+
+                    const cats         = this.categories.filter(cat => cat.id != data.category.id)
+                    const selectedCats = this.selectedCategories.filter(id => id != data.category.id)
+
+                    // stupid hack so sortable.js doesn't interfere with re-rendering our UI
+                    this.categories         = []
+                    this.selectedCategories = []
+
+                    setTimeout(()=> {
+                        this.selectedCategories = selectedCats
+                        this.categories = cats
+                    }, 200)
+
+                    done()
+                })
+                .pipe(done) // don't close the drawer until getContacts is done.
+        })
+        .val( () => {
             this.closeDrawer()
         })
 }
@@ -394,29 +534,32 @@ function onAdd(evt) {
         })
 }
 
+/* The Drawer component slides in and out 
+from the right and holds a dynamic component 
+which will be either a form to add a new category
+or a form to add a new contact. */
+
+function openDrawer() {
+    this.drawer = true
+}
+
+function closeDrawer() {
+    this.drawer = false
+}
+
 /**
- * Update this.contacts and this.contactsByCategory
+ * Helper to get a placeholder contact image.
  * 
- * Using Sortable.js contact nodes can appear twice
- * in a list if we update our lists manually.
- * My efforts to keep track of each category and
- * contact clash with Sortable.
- * 
- * Instead, I just keep this.contacts up to date when
- * I've moved with Sortable, and I only reset the 
- * contactsByCategory lookup object when I have altered 
- * a contact's details.
- * 
- * @param {object} updatedContact Contact details.
- * @param {boolean} redraw redraw contactsByCategory?
- * @return {undefined}
+ * @return {string} Returns url to placeholder image.
  */
-function updateContactLists(updatedContact, redraw = false) {
-    this.contacts = this.contacts
-                        .map(contact => {
-                            if (contact.id === updatedContact.id) {
-                                contact = updatedContact
-                            }
+function avatarStr(id) {
+    if (id > 12) {
+        id = 12
+    }
+    return `https://randomuser.me/api/portraits/men/${id}.jpg`
+}
+
+</script>
 <style lang="scss">
 
     .noContacts {
@@ -438,8 +581,8 @@ function updateContactLists(updatedContact, redraw = false) {
             &:hover {
                 cursor: pointer;
             }
+        }
     }
-}
 
     .topControls {
         display: flex;
@@ -448,7 +591,7 @@ function updateContactLists(updatedContact, redraw = false) {
         .categorySelect {
             flex: 1 0 auto;
             max-width: 300px;
-}
+        }
 
         .newCategory {
             margin-left: auto;
@@ -462,7 +605,7 @@ function updateContactLists(updatedContact, redraw = false) {
             }
             // hide button text on mobile only
             .btn__content span { display: none; }
-}
+        }
 
         @media screen and (min-width: 500px) {
 
@@ -471,14 +614,14 @@ function updateContactLists(updatedContact, redraw = false) {
                 button {
                     min-width: 88px;
                     max-width: none;
-}
+                }
 
                 .btn__content span {
                     display: inline-block;
                 }
             }
         }
-}
+    }
 
     .fullWrap {
         min-height: calc(100vh - 100px);
