@@ -12,6 +12,7 @@
                 name="contact_name"
                 label="First Name"
                 id="contact_name"
+                required
                 v-model="contact.first_name"
             ></v-text-field>
             <v-text-field
@@ -70,7 +71,7 @@
                 </v-flex>
             </v-layout>
             <div class="actions">
-                <v-btn light @click.native="initSave">Save</v-btn>
+                <v-btn :disabled="!contact.first_name" light @click.native="initSave">Save</v-btn>
             </div>
         </div>
         <v-divider></v-divider>
