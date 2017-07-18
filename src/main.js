@@ -15,7 +15,6 @@ import numeral from 'numeral'
 import {collections} from './packages/collections'
 import Vuelidate from 'vuelidate'
 import VeeValidate from 'vee-validate';
-// import Sortable from 'vue-sortable'
 
 import Sortable from 'sortablejs'
 
