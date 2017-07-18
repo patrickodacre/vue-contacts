@@ -4,12 +4,12 @@
             <h3>Danger Zone</h3>
         </header>
         <div class="dangerZone__text">
-            Simply type the first name of the contact and click the Delete button to confirm.
+            <slot name="text"></slot>
         </div>                
         <div class="dangerZone__confirm">
             <div class="input">
                 <v-text-field
-                    label="First Name of the Contact"
+                    :label="inputLabel"
                     v-model="confirmDeleteStr"
                 ></v-text-field>
             </div>
@@ -33,6 +33,10 @@ export default {
             type: String,
             required: true
         },
+        inputLabel: {
+            type: String,
+            required: true
+        }
     },
     data() {
         return {
@@ -52,4 +56,24 @@ export default {
     }
 }
 </script>
+<style lang="scss">
+    .dangerZone {
+        &__confirm {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+
+            .input {
+                flex: 1 0 200px;
+            }
+
+            .button button:disabled:not(.btn--icon):not(.btn--flat) {
+                background-color: rgba(255,0,0,0.25) !important;
+                color: white;
+            }
+        }
+    }
+</style>
+
 
