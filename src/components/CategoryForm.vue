@@ -2,7 +2,7 @@
     <section class="categoryWebForm">
         <header class="drawerHeader categoryWebForm__header">
             <h2 v-if="!config.editMode">Create New Category</h2>
-            <h2 v-if="config.editMode">Edit Category</h2>
+            <h2 v-if="config.editMode">Edit Category - {{categoryNameCopy}}</h2>
         </header>
         <v-divider></v-divider>
         <div class="categoryWebForm__fields">
@@ -31,7 +31,7 @@
 
         <DangerZone
             v-if="category.id !== 1 && config.editMode"
-            :compareStr="category.name"
+            :compareStr="categoryNameCopy"
             v-on:deleteConfirmed="initDeleteCategory"
             inputLabel="Category Name"
         >
@@ -51,6 +51,11 @@ export default {
     data() {
         return {
             category: this.initForm(),
+            /* 
+            config.category.name is affected by reference,
+            so we need a copy of the name to use for validation.
+            */
+            categoryNameCopy: '', 
             showError: false,
             errorMessage: '',
             categoryNames: [],
@@ -60,13 +65,15 @@ export default {
      * Initialize some data.
      */
     mounted() {
-        this.categoryNames = this.config.categoryNames 
-                                ? this.config.categoryNames
-                                : []
+        this.categoryNames    = this.config.categoryNames 
+                                    ? this.config.categoryNames
+                                    : []
 
-        this.category      = (this.config.editMode && this.config.category)
-                                ? this.config.category
-                                : this.initForm()
+        this.category         = (this.config.editMode && this.config.category)
+                                    ? this.config.category
+                                    : this.initForm()
+
+        this.categoryNameCopy = this.config.category.name
     },
     props: {
 
@@ -91,13 +98,16 @@ export default {
         isDrawerActive: function (active) {
             if (!active) return
 
-            this.categoryNames = this.config.categoryNames 
-                                    ? this.config.categoryNames
-                                    : []
+            this.categoryNames    = this.config.categoryNames 
+                                        ? this.config.categoryNames
+                                        : []
 
-            this.category      = (this.config.editMode && this.config.category)
-                                    ? this.config.category
-                                    : this.initForm()
+            this.category         = (this.config.editMode && this.config.category)
+                                        ? this.config.category
+                                        : this.initForm()
+
+            this.categoryNameCopy = this.config.category.name
+                                    
         },
         'category.name': function (name) {
             if (this.categoryNames.indexOf(name) !== -1) {
