@@ -14,8 +14,31 @@
                 class="green--text progressSpinner"
             >
             </v-progress-circular>
+
+            <div class="topControls">
+                <div class="categorySelect">
+                    <v-select
+                        key="id"
+                        :items="categories"
+                        v-model="selectedCategories"
+                        label="Filter by Category"
+                        item-text="name"
+                        item-value="id"
+                        :multiple="true"
+                        single-line
+                        bottom
+                    ></v-select>
+                </div>
+                <div class="newCategory">
+                    <v-btn primary class="tkBtn has-text green" @click.native="initNewCategory">
+                        <v-icon>add</v-icon>
+                        <span>New Category</span>
+                    </v-btn>
+                </div>
+            </div>
+
             <section class="categoryList">
-                <v-card v-for="category in categories" :key="category.id">
+                <v-card v-for="category in filteredCategories" :key="category.id">
                     <v-toolbar class="green" dark>
                         <v-toolbar-title>{{category.name}}</v-toolbar-title>
                         <v-spacer></v-spacer>
@@ -92,8 +115,27 @@ export default {
             activeComponent: '',
             formConfig: {},
             categories: [],
+            selectedCategories: [],
             contacts: [], // master list of contacts. Keep up to date.
             contactsByCategory: {},
+        }
+    },
+    computed: {
+        filteredCategories() {
+            return this.selectedCategories.length > 0
+                        ? this.categories.filter(cat => this.selectedCategories.indexOf(cat.id) !== -1)
+                        : this.categories
+        },
+    },
+    watch: {
+        /**
+         * Again... Sortable plays tricks on the UI,
+         * so whenever we alter the Category filter
+         * we need to update our contactsByCategory
+         * lookup object.
+         */
+        selectedCategories: function (selections) {
+            this.setContactsByCategory(this.contacts)
         }
     },
     beforeMount,
@@ -364,47 +406,44 @@ function updateContactLists(updatedContact, redraw = false) {
     }
 }
 
-/**
- * Remove a contact from the UI after deletion.
- * 
- * Must set the contactsByCategory lookup obj
- * as well to redraw the UI
- * 
- * @param {number} deletedContactID
- * @return {undefined}
- */
-function removeContactFromList(deletedContactID) {
-    this.contacts = this.contacts
-                        .filter(contact => contact.id !== deletedContactID)
+    .topControls {
+        display: flex;
+        align-items: flex-start;
 
-    this.setContactsByCategory(this.contacts)
+        .categorySelect {
+            flex: 1 0 auto;
+            max-width: 300px;
 }
 
-/**
- * Recalc the contactsByCategory lookup obj
- * to refresh the UI
- * 
- * @return {undefined}
- */
-function setContactsByCategory(contacts) {
-    this.contactsByCategory = this.$collect(contacts).groupBy('category_id').get()
+        .newCategory {
+            margin-left: auto;
+
+            i { color: white; }
+
+            button {
+                // override the default styles. I want a smaller button on mobile.
+                min-width: 44px;
+                max-width: 44px;
+            }
+            // hide button text on mobile only
+            .btn__content span { display: none; }
 }
 
-/* The Drawer component slides in and out 
-from the right and holds a dynamic component 
-which will be either a form to add a new category
-or a form to add a new contact. */
+        @media screen and (min-width: 500px) {
 
-function openDrawer() {
-    this.drawer = true
+            // reset styles
+            .newCategory {
+                button {
+                    min-width: 88px;
+                    max-width: none;
 }
 
-function closeDrawer() {
-    this.drawer = false
+                .btn__content span {
+                    display: inline-block;
+                }
+            }
+        }
 }
-
-</script>
-<style lang="scss">
 
     .fullWrap {
         min-height: calc(100vh - 100px);
