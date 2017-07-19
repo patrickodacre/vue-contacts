@@ -6,6 +6,12 @@
     <main>
         <p>Thank you for considering this modest demo app.</p>
         <p>Here is where you can read all about the features I've created. The code, of course, is commented to given you an even deeper look into my thoughts as I was developing.</p>
+        <h2>More About Me:</h2>
+        <p><a href="http://bit.ly/vue_by_example" target="_blank">Vue By Example Blog</a> - Succinct tutorials that help people understand Vue more deeply.</p>
+        <p><a href="https://github.com/patrickodacre/vue-contacts" target="_blank">Vue Contacts Repo</a> - the front end code for this demo.</p>
+        <p><a href="https://github.com/patrickodacre/contacts-starter" target="_blank">Laravel API</a> - the API code for this demo.</p>
+        <p>I have worked extensively with Vue tools - Vue, Vue Router, Vuex.</p>
+        <p>I have worked extensively with Vue tools - Vue, Vue Router, Vuex.</p>
         <h2>Features:</h2>
         <p>
             You will have the ability to create, delete, edit contact categories and add new contacts to any of those categories. Contacts, of course, may be edited and deleted, as well.
