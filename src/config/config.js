@@ -1,5 +1,5 @@
 export default {
-    apiRoot: 'http://crudstarter.app',
+    apiRoot: 'http://vuebyexample.com',
     useOauth: false,
     sidebarMenu: [
             {
