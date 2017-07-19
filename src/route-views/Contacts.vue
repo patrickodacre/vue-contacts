@@ -123,6 +123,7 @@ export default {
             selectedCategories: [],
             contacts: [], // master list of contacts. Keep up to date.
             contactsByCategory: {},
+            isDeletingCategory: false, // flag to better manage custom watcher
         }
     },
     computed: {
@@ -156,6 +157,9 @@ export default {
          * lookup object.
          */
         selectedCategories: function (selections) {
+            // don't reset contactsByCategory here when removing a category.
+            // already done in the delete handler - handleDeleteCategory
+            if (this.isDeletingCategory) return
             this.setContactsByCategory(this.contacts, this.categories)
         }
     },
@@ -493,11 +497,11 @@ function handleDeleteCategory(category) {
             */
             this.getContacts()
                 .then((done, contacts) => {
-                    this.contacts = contacts
+                    this.isDeletingCategory = true // flag to stop custom watch
+                    this.contacts           = contacts
+                    const cats              = this.categories.filter(cat => cat.id != data.category.id)
+                    const selectedCats      = this.selectedCategories.filter(id => id != data.category.id)
 
-                    const cats         = this.categories.filter(cat => cat.id != data.category.id)
-                    const selectedCats = this.selectedCategories.filter(id => id != data.category.id)
-                    
                     this.setContactsByCategory(contacts, cats)
 
                     // stupid hack so sortable.js doesn't interfere with re-rendering our UI
@@ -507,6 +511,8 @@ function handleDeleteCategory(category) {
                     setTimeout(()=> {
                         this.selectedCategories = selectedCats
                         this.categories = cats
+
+                        this.isDeletingCategory = false // reset flag
                     }, 200)
 
                     done()
