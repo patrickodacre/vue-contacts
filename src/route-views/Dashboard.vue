@@ -10,8 +10,26 @@
         <p><a href="http://bit.ly/vue_by_example" target="_blank">Vue By Example Blog</a> - Succinct tutorials that help people understand Vue more deeply.</p>
         <p><a href="https://github.com/patrickodacre/vue-contacts" target="_blank">Vue Contacts Repo</a> - the front end code for this demo.</p>
         <p><a href="https://github.com/patrickodacre/contacts-starter" target="_blank">Laravel API</a> - the API code for this demo.</p>
-        <p>I have worked extensively with Vue tools - Vue, Vue Router, Vuex.</p>
-        <p>I have worked extensively with Vue tools - Vue, Vue Router, Vuex.</p>
+        <p>As for the API, you'll want to look at the following files:</p>
+        <ul>
+            <li>Migrations: \database\migrations</li>
+            <li>Seeder: \database\seeds\CategoriesTableSeeder.php</li>
+            <li>Routes: \routes\api.php</li>
+            <li>Models:
+                <ul>
+                    <li>\app\Category.php</li>
+                    <li>\app\Contact.php</li>
+                </ul>
+            </li>
+            <li>Controllers:
+                <ul>
+                    <li>\app\Http\Controllers\CategoryController.php</li>
+                    <li>\app\Http\Controllers\ContactController.php</li>
+                </ul>
+            </li>
+        </ul>
+        <p></p>
+        <p>All other files are just Laravel framework code.</p>
         <h2>Features:</h2>
         <p>
             You will have the ability to create, delete, edit contact categories and add new contacts to any of those categories. Contacts, of course, may be edited and deleted, as well.
