@@ -156,7 +156,7 @@ export default {
          * lookup object.
          */
         selectedCategories: function (selections) {
-            this.setContactsByCategory(this.contacts)
+            this.setContactsByCategory(this.contacts, this.categories)
         }
     },
     beforeMount,
@@ -213,18 +213,7 @@ function beforeMount() {
             this.contacts           = contacts
             this.categories         = categories
 
-            // make sure we have ALL categories in our lookup
-            const contactsByCategoryStarter = categories
-                                                .reduce((carry, cat) => {
-                                                    carry[cat.id] = []
-                                                    return carry
-                                                }, {})
-
-            this.contactsByCategory = contacts
-                                        .reduce((carry, contact) => {
-                                            carry[contact.category_id].push(contact)
-                                            return carry
-                                        }, contactsByCategoryStarter)
+            this.setContactsByCategory(contacts, categories)
 
             this.loading            = false
         })
@@ -371,7 +360,7 @@ function updateContactLists(updatedContact, redraw = false) {
     a Sortable drag / drop to another list.
     */
     if (redraw) {
-        this.setContactsByCategory(this.contacts)
+        this.setContactsByCategory(this.contacts, this.categories)
     }
 }
 
@@ -388,7 +377,7 @@ function removeContactFromList(deletedContactID) {
     this.contacts = this.contacts
                         .filter(contact => contact.id !== deletedContactID)
 
-    this.setContactsByCategory(this.contacts)
+    this.setContactsByCategory(this.contacts, this.categories)
 }
 
 /**
@@ -396,10 +385,21 @@ function removeContactFromList(deletedContactID) {
  * to refresh the UI
  * 
  * @param {array} contacts Array of contacts.
+ * @param {array} categories Array of categories.
  * @return {undefined}
  */
-function setContactsByCategory(contacts) {
-    this.contactsByCategory = this.$collect(contacts).groupBy('category_id').get()
+function setContactsByCategory(contacts, categories) {
+    const contactsByCategoryStarter = categories
+                                        .reduce((carry, cat) => {
+                                            carry[cat.id] = []
+                                            return carry
+                                        }, {})
+
+    this.contactsByCategory = contacts
+                                .reduce((carry, contact) => {
+                                    carry[contact.category_id].push(contact)
+                                    return carry
+                                }, contactsByCategoryStarter)
 }
 
 
@@ -494,10 +494,11 @@ function handleDeleteCategory(category) {
             this.getContacts()
                 .then((done, contacts) => {
                     this.contacts = contacts
-                    this.setContactsByCategory(this.contacts)
 
                     const cats         = this.categories.filter(cat => cat.id != data.category.id)
                     const selectedCats = this.selectedCategories.filter(id => id != data.category.id)
+                    
+                    this.setContactsByCategory(contacts, cats)
 
                     // stupid hack so sortable.js doesn't interfere with re-rendering our UI
                     this.categories         = []
