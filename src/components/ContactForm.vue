@@ -28,6 +28,12 @@
                 v-model="contact.phone"
             ></v-text-field>
             <v-text-field
+                name="contact_zip"
+                label="Zip"
+                id="contact_zip"
+                v-model="contact.zip"
+            ></v-text-field>
+            <v-text-field
                 name="contact_email"
                 label="Email"
                 id="contact_email"
