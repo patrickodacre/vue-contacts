@@ -3,6 +3,7 @@ import FullWidthContent from '@/templates/FullWidthContent.vue'
 import Main from '@/templates/Main.vue'
 import Home from '@/route-views/Home.vue'
 import Contacts from '@/route-views/Contacts.vue'
+import Dashboard from '@/route-views/Dashboard.vue'
 import App from '../App.vue'
 
 const Foo = { template: `<div>Sidebar</div>`}
@@ -26,10 +27,17 @@ const routes = [{
             // },
             {
                 path: '/',
-                name: 'dashboard',
+                // name: 'dashboard',
                 component: SidebarContent,
                 children: [
-                    
+                    {
+                        path: 'dashboard',
+                        name: 'dashboard',
+                        components: {
+                            sidebar: Foo,
+                            content: Dashboard
+                        }
+                    },
                     {
                         path: 'contacts',
                         name: 'contacts',
