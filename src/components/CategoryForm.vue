@@ -11,6 +11,8 @@
                 required
                 label="Category Name"
                 id="category_name"
+                ref="categoryNameField"
+                @keyup.enter.native="initSave"
                 v-model="category.name"
              ></v-text-field>
             <v-text-field
@@ -66,15 +68,10 @@ export default {
      * Initialize some data.
      */
     mounted() {
-        this.categoryNames    = this.config.categoryNames 
-                                    ? this.config.categoryNames
-                                    : []
+        
+        this.initData()
 
-        this.category         = (this.config.editMode && this.config.category)
-                                    ? this.config.category
-                                    : this.initForm()
-
-        this.categoryNameCopy = this.config.editMode ? this.config.category.name : false
+        this.focusFirstField()
     },
     props: {
 
@@ -100,15 +97,9 @@ export default {
             if (!active) return
 
             // We have to initialize these data here, too, since mounted() only fires once.
-            this.categoryNames    = this.config.categoryNames 
-                                        ? this.config.categoryNames
-                                        : []
+            this.initData()
 
-            this.category         = (this.config.editMode && this.config.category)
-                                        ? this.config.category
-                                        : this.initForm()
-
-            this.categoryNameCopy = this.config.editMode ? this.config.category.name : false
+            this.focusFirstField()
                                     
         },
         'category.name': function (name) {
@@ -126,12 +117,27 @@ export default {
     },
     methods: {
         initSave() {
+            if (this.showError || !this.category.name) return
 
             if (this.config.editMode) {
                 this.$emit('updateCategory', this.category)
             } else {
                 this.$emit('createCategory', this.category)
             }
+        },
+        initData() {
+            this.categoryNames    = this.config.categoryNames 
+                                        ? this.config.categoryNames
+                                        : []
+
+            this.category         = (this.config.editMode && this.config.category)
+                                        ? this.config.category
+                                        : this.initForm()
+
+            this.categoryNameCopy = this.config.editMode ? this.config.category.name : false
+        },
+        focusFirstField() {
+            this.$refs.categoryNameField.focus()
         },
         initForm() {
             return {

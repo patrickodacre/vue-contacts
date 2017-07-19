@@ -11,6 +11,8 @@
                 label="First Name"
                 id="contact_name"
                 required
+                ref="firstNameField"
+                @keyup.enter.native="initSave"
                 v-model="contact.first_name"
             ></v-text-field>
             <v-text-field
@@ -123,12 +125,13 @@ export default {
 
         // initialize our data here.
         if (this.config.editMode && this.config.contact) {
-            this.contact = this.config.contact
-            this.contactNameCopy = this.config.contact.first_name + ' ' + this.config.contact.last_name
+            this.initData()
         } else {
             this.resetForm()
             this.setCategoryID()
         }
+
+        this.focusFirstField()
     },
     watch: {
         isDrawerActive: function (active) {
@@ -136,12 +139,13 @@ export default {
 
             // initialize again here mounted() only fires once.
             if (this.config.editMode && this.config.contact) {
-                this.contact = this.config.contact
-                this.contactNameCopy = this.config.contact.first_name + ' ' + this.config.contact.last_name
+                this.initData()
             } else {
                 this.resetForm()
                 this.setCategoryID()
             }
+            
+            this.focusFirstField()
         }
     },
     computed: {
@@ -151,13 +155,23 @@ export default {
                         : 'No DoB Entered'
         },
     },
-    methods: {
+    methods: {        
         initSave() {
+
+            if (!this.contact.first_name) return
+
             if (this.config.editMode) {
                 this.$emit('updateContact', this.contact)
             } else {
                 this.$emit('createContact', this.contact)
             }
+        },
+        initData() {
+            this.contact = this.config.contact
+            this.contactNameCopy = this.config.contact.first_name + ' ' + this.config.contact.last_name
+        },
+        focusFirstField() {
+            this.$refs.firstNameField.focus()
         },
         initDeleteContact() {
             this.$emit('deleteContact', this.contact)
