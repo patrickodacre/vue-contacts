@@ -31,7 +31,7 @@ const routes = [{
                 component: SidebarContent,
                 children: [
                     {
-                        path: 'dashboard',
+                        path: '/',
                         name: 'dashboard',
                         components: {
                             sidebar: Foo,
